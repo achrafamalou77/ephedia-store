@@ -1,6 +1,6 @@
 import React from 'react';
 
-const HERO_IMAGE_URL = "/banner.png";
+const HERO_IMAGE_URL = "/hero-bg.png";
 
 const Hero = () => {
     return (
