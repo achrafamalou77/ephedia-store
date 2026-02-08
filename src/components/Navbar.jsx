@@ -19,13 +19,21 @@ const Navbar = () => {
         }
     };
 
+    const LOGO_URL = "https://hlmpdrzntwhlbijqttvr.supabase.co/storage/v1/object/public/website-assets/Adobe%20Express%20-%20file.png";
+
     return (
         <>
             <nav className="flex justify-between items-center h-16 px-4 md:px-8 border-b border-white/10 bg-navy sticky top-0 z-50 shadow-md">
                 <div className="flex items-center space-x-8">
                     <Link to="/" className="flex items-center gap-3">
                         {/* Logo Slot */}
-                        <img src="/header-logo.png" alt="Ephedia Store" className="h-12 w-auto object-contain" loading="eager" fetchpriority="high" />
+                        <img
+                            src={LOGO_URL}
+                            alt="Ephedia"
+                            className="h-12 w-auto object-contain"
+                            loading="eager"
+                            fetchpriority="high"
+                        />
                     </Link>
                     <div className="hidden md:flex space-x-6 text-cream/80 hover:text-cream transition-colors">
                         <Link to="/" className="font-sans font-medium text-sm tracking-wide hover:underline decoration-1 underline-offset-4">SHOP</Link>
