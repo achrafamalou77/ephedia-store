@@ -48,11 +48,12 @@ const ProductPage = () => {
                 // Fetch Related Products (Random 4 excluding current)
                 const { data: relatedData, error: relatedError } = await supabase
                     .from('products')
-                    .select('*')
+                    .select('id, title, price, image_url, category')
                     .neq('id', id)
                     .limit(10);
 
                 if (!relatedError && relatedData) {
+                    console.log("Related Items:", relatedData);
                     const shuffled = relatedData.sort(() => 0.5 - Math.random());
                     setRelatedProducts(shuffled.slice(0, 4));
                 }
@@ -391,7 +392,7 @@ const ProductPage = () => {
                                 <Link to={`/product/${newItem.id}`} key={newItem.id} className="group cursor-pointer flex flex-col h-full">
                                     <div className="relative overflow-hidden aspect-[4/5] bg-gray-100 mb-4 rounded-3xl shadow-sm">
                                         <img
-                                            src={newItem.image}
+                                            src={newItem.image_url || newItem.image || "https://placehold.co/400"}
                                             alt={newItem.title}
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
