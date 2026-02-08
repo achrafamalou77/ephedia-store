@@ -43,7 +43,21 @@ const ProductPage = () => {
                 if (productError) throw productError;
                 setProduct(productData);
                 setSelectedImage(productData.image_url || productData.image);
-                if (productData) setTotalPrice(productData.price);
+                if (productData) {
+                    setTotalPrice(productData.price);
+
+                    // Track Recently Viewed
+                    const viewedItem = {
+                        id: productData.id,
+                        title: productData.title,
+                        price: productData.price,
+                        image_url: productData.image_url || productData.image
+                    };
+
+                    const existingHistory = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+                    const newHistory = [viewedItem, ...existingHistory.filter(i => i.id !== productData.id)].slice(0, 4);
+                    localStorage.setItem('recentlyViewed', JSON.stringify(newHistory));
+                }
 
                 // Fetch Related Products (Random 4 excluding current)
                 const { data: relatedData, error: relatedError } = await supabase
