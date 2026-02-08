@@ -12,6 +12,9 @@ const Hero = () => {
                 src={HERO_IMAGE_URL}
                 alt="Ephedia Jewelry"
                 className="absolute inset-0 w-full h-full object-cover opacity-90"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
             />
 
             <div className="relative z-20 text-center space-y-6 px-4 animate-fade-in-up">

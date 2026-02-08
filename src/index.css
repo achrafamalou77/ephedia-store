@@ -17,7 +17,7 @@ html {
 
 @layer base {
     body {
-        @apply bg-cream text-navy font-sans antialiased;
+        @apply bg-cream text-navy font-sans antialiased overflow-x-hidden;
     }
 
     h1,

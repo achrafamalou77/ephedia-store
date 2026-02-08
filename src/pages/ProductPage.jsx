@@ -211,7 +211,7 @@ const ProductPage = () => {
                     </div>
 
                     {/* Right Column: Order Form */}
-                    <div className="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-navy/5">
+                    <div className="relative md:sticky md:top-24 h-fit z-10 bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-navy/5">
                         <div className="lg:hidden mb-8 text-center">
                             <h1 className="text-3xl font-serif text-navy mb-2">{product.title}</h1>
                             <p className="text-2xl font-sans font-medium text-navy/80">{product.price} DA</p>
