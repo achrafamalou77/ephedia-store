@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Package, Phone, MapPin, Calendar, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react';
+import { Package, Phone, MapPin, Calendar, CheckCircle, XCircle, Clock, Trash2, Truck } from 'lucide-react';
+import { createDeliveryOrder } from '../lib/ecotrack';
 
 const AdminOrders = () => {
     const [orders, setOrders] = useState([]);
@@ -45,6 +46,31 @@ const AdminOrders = () => {
         }
     };
 
+    const handleConfirmAndShip = async (order) => {
+        if (!window.confirm('Confirm and Send this order to Ecotrack?')) return;
+
+        try {
+            // 1. Send to Ecotrack
+            await createDeliveryOrder(order);
+
+            // 2. Update status in Supabase
+            const { error } = await supabase
+                .from('orders')
+                .update({ status: 'shipped' })
+                .eq('id', order.id);
+
+            if (error) throw error;
+
+            // 3. Update local state
+            setOrders(orders.map(o => o.id === order.id ? { ...o, status: 'shipped' } : o));
+
+            alert("Success! Parcel sent to Ecotrack and status updated to Shipped.");
+        } catch (error) {
+            console.error("Ecotrack Error:", error);
+            alert("Ecotrack Error: " + (error.message || "Unknown error occurred"));
+        }
+    };
+
     const deleteOrder = async (id) => {
         if (!window.confirm('Are you sure you want to delete this order? This action cannot be undone.')) return;
 
@@ -64,6 +90,7 @@ const AdminOrders = () => {
 
     const getStatusBadge = (status) => {
         switch (status) {
+            case 'shipped': return <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><Truck size={14} className="mr-1" /> Shipped</span>;
             case 'confirmed': return <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"><CheckCircle size={14} className="mr-1" /> Confirmed</span>;
             case 'cancelled': return <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800"><XCircle size={14} className="mr-1" /> Cancelled</span>;
             case 'pending':
@@ -182,13 +209,21 @@ const AdminOrders = () => {
                                 {/* Order Actions Footer */}
                                 <div className="mt-8 pt-6 border-t border-navy/5 flex flex-wrap gap-3 items-center justify-between">
                                     <div className="flex gap-2">
-                                        {(order.status === 'pending' || order.status === 'new') && (
+                                        {(order.status === 'pending' || order.status === 'new' || order.status === 'confirmed') && (
                                             <>
+                                                {order.status !== 'confirmed' && (
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(order.id, 'confirmed')}
+                                                        className="px-6 py-2 bg-white text-navy text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-navy/5 transition-all border border-navy/10 active:scale-95"
+                                                    >
+                                                        Confirm Only
+                                                    </button>
+                                                )}
                                                 <button
-                                                    onClick={() => handleUpdateStatus(order.id, 'confirmed')}
+                                                    onClick={() => handleConfirmAndShip(order)}
                                                     className="px-6 py-2 bg-navy text-cream text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-navy/90 transition-all shadow-sm active:scale-95"
                                                 >
-                                                    Confirm Order
+                                                    Confirm & Ship
                                                 </button>
                                                 <button
                                                     onClick={() => handleUpdateStatus(order.id, 'cancelled')}
