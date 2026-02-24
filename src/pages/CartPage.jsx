@@ -14,18 +14,29 @@ const CartPage = () => {
 
     // Checkout State
     const [formData, setFormData] = useState({
-        fullName: '',
+        customer_name: '',
         phone: '',
         wilayaId: '',
         commune: '',
-        deliveryType: 'home' // 'home' or 'stop_desk'
+        address: '',
+        delivery_method: 'Home Delivery'
     });
 
     // Calculated Shipping
+    // Calculated Shipping
     const selectedWilaya = wilayaRates.find(w => w.id === parseInt(formData.wilayaId));
-    const shippingPrice = selectedWilaya ? (formData.deliveryType === 'home' ? selectedWilaya.home_price : selectedWilaya.stop_desk_price) : 0;
-    const subtotal = getCartTotal();
-    const grandTotal = subtotal + shippingPrice;
+    let shippingPrice = 600; // Default fallback
+
+    if (selectedWilaya) {
+        if (formData.delivery_method === 'Home Delivery') {
+            shippingPrice = selectedWilaya.home || 600;
+        } else {
+            shippingPrice = selectedWilaya.stopdesk || 400;
+        }
+    }
+
+    const subtotal = Number(getCartTotal()) || 0;
+    const grandTotal = subtotal + (Number(shippingPrice) || 0);
 
     useEffect(() => {
         // Fetch random products for "You May Also Like"
@@ -50,15 +61,16 @@ const CartPage = () => {
 
             const payload = {
                 product_name: productNames,
-                product_price: subtotal,
-                shipping_price: shippingPrice,
-                total_price: grandTotal,
-                customer_name: formData.fullName,
+                product_price: Number(subtotal),
+                shipping_price: Number(shippingPrice),
+                total_price: Number(grandTotal),
+                customer_name: formData.customer_name,
                 phone: formData.phone,
                 wilaya: selectedWilaya?.name || '',
-                commune: formData.commune,
-                delivery_type: formData.deliveryType,
-                status: 'new' // Initial status
+                commune: formData.commune || '',
+                address: formData.address || '',
+                delivery_method: formData.delivery_method,
+                status: 'pending'
             };
 
             // 2. Insert into Supabase
@@ -170,7 +182,7 @@ const CartPage = () => {
                             {/* Personal Info */}
                             <div>
                                 <label className="block text-xs font-bold text-navy/70 uppercase tracking-wider mb-1">Full Name</label>
-                                <input required type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full px-4 py-3 bg-white border border-navy/10 rounded-lg focus:outline-none focus:border-navy transition-colors text-navy" placeholder="John Doe" />
+                                <input required type="text" name="customer_name" value={formData.customer_name} onChange={handleInputChange} className="w-full px-4 py-3 bg-white border border-navy/10 rounded-lg focus:outline-none focus:border-navy transition-colors text-navy" placeholder="John Doe" />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-navy/70 uppercase tracking-wider mb-1">Phone Number</label>
@@ -193,18 +205,22 @@ const CartPage = () => {
                                     <input required type="text" name="commune" value={formData.commune} onChange={handleInputChange} className="w-full px-4 py-3 bg-white border border-navy/10 rounded-lg focus:outline-none focus:border-navy transition-colors text-navy" placeholder="City" />
                                 </div>
                             </div>
+                            <div>
+                                <label className="block text-xs font-bold text-navy/70 uppercase tracking-wider mb-1">Detailed Address (Optional)</label>
+                                <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full px-4 py-3 bg-white border border-navy/10 rounded-lg focus:outline-none focus:border-navy transition-colors text-navy" placeholder="Street, Building, etc." />
+                            </div>
 
                             {/* Delivery Type */}
                             <div className="space-y-2 pt-2">
                                 <label className="block text-xs font-bold text-navy/70 uppercase tracking-wider mb-1">Delivery Method</label>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <label className={`cursor-pointer border rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-all ${formData.deliveryType === 'home' ? 'border-navy bg-navy/5 text-navy' : 'border-navy/10 text-navy/50 hover:border-navy/30'}`}>
-                                        <input type="radio" name="deliveryType" value="home" checked={formData.deliveryType === 'home'} onChange={handleInputChange} className="hidden" />
+                                    <label className={`cursor-pointer border rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-all ${formData.delivery_method === 'Home Delivery' ? 'border-navy bg-navy/5 text-navy' : 'border-navy/10 text-navy/50 hover:border-navy/30'}`}>
+                                        <input type="radio" name="delivery_method" value="Home Delivery" checked={formData.delivery_method === 'Home Delivery'} onChange={handleInputChange} className="hidden" />
                                         <Truck size={20} />
                                         <span className="text-xs font-bold">Home</span>
                                     </label>
-                                    <label className={`cursor-pointer border rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-all ${formData.deliveryType === 'stop_desk' ? 'border-navy bg-navy/5 text-navy' : 'border-navy/10 text-navy/50 hover:border-navy/30'}`}>
-                                        <input type="radio" name="deliveryType" value="stop_desk" checked={formData.deliveryType === 'stop_desk'} onChange={handleInputChange} className="hidden" />
+                                    <label className={`cursor-pointer border rounded-xl p-3 flex flex-col items-center justify-center gap-2 transition-all ${formData.delivery_method === 'Office Pickup' ? 'border-navy bg-navy/5 text-navy' : 'border-navy/10 text-navy/50 hover:border-navy/30'}`}>
+                                        <input type="radio" name="delivery_method" value="Office Pickup" checked={formData.delivery_method === 'Office Pickup'} onChange={handleInputChange} className="hidden" />
                                         <MapPin size={20} />
                                         <span className="text-xs font-bold">Office</span>
                                     </label>
@@ -215,15 +231,15 @@ const CartPage = () => {
                             <div className="border-t border-navy/10 pt-4 mt-6 space-y-2">
                                 <div className="flex justify-between text-navy/60 text-sm">
                                     <span>Subtotal</span>
-                                    <span>{subtotal.toFixed(2)} DA</span>
+                                    <span>{(subtotal || 0).toFixed(2)} DA</span>
                                 </div>
                                 <div className="flex justify-between text-navy/60 text-sm">
                                     <span>Shipping</span>
-                                    <span>{shippingPrice.toFixed(2)} DA</span>
+                                    <span>{(shippingPrice || 0).toFixed(2)} DA</span>
                                 </div>
                                 <div className="flex justify-between text-navy font-bold text-xl pt-2 border-t border-navy/5">
                                     <span>Total</span>
-                                    <span>{grandTotal.toFixed(2)} DA</span>
+                                    <span>{(grandTotal || 0).toFixed(2)} DA</span>
                                 </div>
                             </div>
 

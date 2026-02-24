@@ -249,51 +249,53 @@ const AdminPanel = () => {
                             <p className="text-navy/50 italic">No products in inventory yet.</p>
                         ) : (
                             <div className="bg-white rounded-lg shadow-sm border border-navy/5 overflow-hidden">
-                                <table className="w-full text-left">
-                                    <thead className="bg-navy/5 text-navy/70 uppercase text-xs tracking-wider">
-                                        <tr>
-                                            <th className="px-6 py-4 font-medium">Image</th>
-                                            <th className="px-6 py-4 font-medium">Product</th>
-                                            <th className="px-6 py-4 font-medium">Category</th>
-                                            <th className="px-6 py-4 font-medium">Price</th>
-                                            <th className="px-6 py-4 font-medium text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-navy/5">
-                                        {products.map((product) => (
-                                            <tr key={product.id} className="hover:bg-navy/[0.02]">
-                                                <td className="px-6 py-4">
-                                                    <div className="w-12 h-12 bg-gray-100 rounded-sm overflow-hidden">
-                                                        {(product.image || product.image_url) && (
-                                                            <img src={product.image_url || product.image} alt={product.title} className="w-full h-full object-cover" />
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 font-medium text-navy">{product.title}</td>
-                                                <td className="px-6 py-4 text-navy/70">{product.category}</td>
-                                                <td className="px-6 py-4 text-navy">{product.price} DA</td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        <button
-                                                            onClick={() => handleEditClick(product)}
-                                                            className="text-navy hover:text-navy/70 p-2 hover:bg-navy/5 rounded-full transition-colors"
-                                                            title="Edit Product"
-                                                        >
-                                                            <Edit2 size={18} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(product.id)}
-                                                            className="text-red-800 hover:text-red-600 p-2 hover:bg-red-50 rounded-full transition-colors"
-                                                            title="Delete Product"
-                                                        >
-                                                            <Trash2 size={18} />
-                                                        </button>
-                                                    </div>
-                                                </td>
+                                <div className="w-full overflow-x-auto overflow-y-hidden border-b border-gray-200">
+                                    <table className="w-full text-left min-w-[600px]">
+                                        <thead className="bg-navy/5 text-navy/70 uppercase text-xs tracking-wider">
+                                            <tr>
+                                                <th className="px-6 py-4 font-medium">Image</th>
+                                                <th className="px-6 py-4 font-medium">Product</th>
+                                                <th className="px-6 py-4 font-medium">Category</th>
+                                                <th className="px-6 py-4 font-medium">Price</th>
+                                                <th className="px-6 py-4 font-medium text-right">Actions</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-navy/5">
+                                            {products.map((product) => (
+                                                <tr key={product.id} className="hover:bg-navy/[0.02]">
+                                                    <td className="px-6 py-4">
+                                                        <div className="w-12 h-12 bg-gray-100 rounded-sm overflow-hidden">
+                                                            {(product.image || product.image_url) && (
+                                                                <img src={product.image_url || product.image} alt={product.title} className="w-full h-full object-cover" />
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 font-medium text-navy">{product.title}</td>
+                                                    <td className="px-6 py-4 text-navy/70">{product.category}</td>
+                                                    <td className="px-6 py-4 text-navy">{product.price} DA</td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <div className="flex justify-end gap-2">
+                                                            <button
+                                                                onClick={() => handleEditClick(product)}
+                                                                className="text-navy hover:text-navy/70 p-2 hover:bg-navy/5 rounded-full transition-colors"
+                                                                title="Edit Product"
+                                                            >
+                                                                <Edit2 size={18} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDelete(product.id)}
+                                                                className="text-red-800 hover:text-red-600 p-2 hover:bg-red-50 rounded-full transition-colors"
+                                                                title="Delete Product"
+                                                            >
+                                                                <Trash2 size={18} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         )}
                     </div>

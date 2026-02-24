@@ -32,7 +32,7 @@ const Navbar = () => {
                             alt="Ephedia"
                             className="h-12 w-auto object-contain"
                             loading="eager"
-                            fetchpriority="high"
+                            fetchPriority="high"
                         />
                     </Link>
                     <div className="hidden md:flex space-x-6 text-cream/80 hover:text-cream transition-colors">
