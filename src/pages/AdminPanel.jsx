@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, Edit2, X } from 'lucide-react';
 import AdminOrders from './AdminOrders';
 
 const AdminPanel = () => {
@@ -14,6 +14,7 @@ const AdminPanel = () => {
         image: '',
         gallery: ''
     });
+    const [editingId, setEditingId] = useState(null);
 
     useEffect(() => {
         fetchProducts();
@@ -47,31 +48,61 @@ const AdminPanel = () => {
         try {
             // Split gallery string into array and trim whitespace
             const galleryUrls = newProduct.gallery
-                ? newProduct.gallery.split(',').map(url => url.trim()).filter(url => url)
+                ? (typeof newProduct.gallery === 'string' ? newProduct.gallery.split(',').map(url => url.trim()).filter(url => url) : newProduct.gallery)
                 : [];
 
-            const { data, error } = await supabase
-                .from('products')
-                .insert([
-                    {
-                        title: newProduct.title,
-                        price: parseFloat(newProduct.price),
-                        category: newProduct.category,
-                        image_url: newProduct.image,
-                        gallery_urls: galleryUrls
-                    }
-                ])
-                .select();
+            const productData = {
+                title: newProduct.title,
+                price: parseFloat(newProduct.price),
+                category: newProduct.category,
+                image_url: newProduct.image,
+                gallery_urls: galleryUrls
+            };
 
-            if (error) throw error;
+            if (editingId) {
+                const { error } = await supabase
+                    .from('products')
+                    .update(productData)
+                    .eq('id', editingId);
 
-            setProducts([data[0], ...products]);
+                if (error) throw error;
+
+                setProducts(products.map(p => p.id === editingId ? { ...p, ...productData } : p));
+                alert('Product updated successfully!');
+            } else {
+                const { data, error } = await supabase
+                    .from('products')
+                    .insert([productData])
+                    .select();
+
+                if (error) throw error;
+                setProducts([data[0], ...products]);
+                alert('Product added successfully!');
+            }
+
             setNewProduct({ title: '', price: '', category: '', image: '', gallery: '' });
-            alert('Product added successfully!');
+            setEditingId(null);
         } catch (error) {
-            console.error('Error adding product:', error);
-            alert(`Error adding product: ${error.message}`);
+            console.error('Error saving product:', error);
+            alert(`Error saving product: ${error.message}`);
         }
+    };
+
+    const handleEditClick = (product) => {
+        setNewProduct({
+            title: product.title,
+            price: product.price,
+            category: product.category || '',
+            image: product.image_url || product.image || '',
+            gallery: product.gallery_urls ? product.gallery_urls.join(', ') : ''
+        });
+        setEditingId(product.id);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancelEdit = () => {
+        setNewProduct({ title: '', price: '', category: '', image: '', gallery: '' });
+        setEditingId(null);
     };
 
     const handleDelete = async (id) => {
@@ -123,7 +154,8 @@ const AdminPanel = () => {
                     {/* Add Product Form */}
                     <div className="bg-white p-6 rounded-lg shadow-sm border border-navy/5 mb-12">
                         <h2 className="text-xl font-serif text-navy mb-6 flex items-center gap-2">
-                            <Plus size={20} /> Add New Product
+                            {editingId ? <Edit2 size={20} /> : <Plus size={20} />}
+                            {editingId ? 'Edit Product' : 'Add New Product'}
                         </h2>
                         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -188,13 +220,22 @@ const AdminPanel = () => {
                                     rows="2"
                                 />
                             </div>
-                            <div className="md:col-span-2">
+                            <div className="md:col-span-2 flex gap-4">
                                 <button
                                     type="submit"
-                                    className="bg-navy text-cream px-8 py-3 w-full hover:bg-navy/90 transition-colors uppercase tracking-widest text-sm font-medium"
+                                    className="bg-navy text-cream px-8 py-3 flex-1 hover:bg-navy/90 transition-colors uppercase tracking-widest text-sm font-medium"
                                 >
-                                    Add Product
+                                    {editingId ? 'Update Product' : 'Add Product'}
                                 </button>
+                                {editingId && (
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelEdit}
+                                        className="bg-gray-100 text-navy px-8 py-3 hover:bg-gray-200 transition-colors uppercase tracking-widest text-sm font-medium flex items-center gap-2"
+                                    >
+                                        <X size={16} /> Cancel
+                                    </button>
+                                )}
                             </div>
                         </form>
                     </div>
@@ -232,13 +273,22 @@ const AdminPanel = () => {
                                                 <td className="px-6 py-4 text-navy/70">{product.category}</td>
                                                 <td className="px-6 py-4 text-navy">{product.price} DA</td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button
-                                                        onClick={() => handleDelete(product.id)}
-                                                        className="text-red-800 hover:text-red-600 p-2 hover:bg-red-50 rounded-full transition-colors"
-                                                        title="Delete Product"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
+                                                    <div className="flex justify-end gap-2">
+                                                        <button
+                                                            onClick={() => handleEditClick(product)}
+                                                            className="text-navy hover:text-navy/70 p-2 hover:bg-navy/5 rounded-full transition-colors"
+                                                            title="Edit Product"
+                                                        >
+                                                            <Edit2 size={18} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(product.id)}
+                                                            className="text-red-800 hover:text-red-600 p-2 hover:bg-red-50 rounded-full transition-colors"
+                                                            title="Delete Product"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
