@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { wilayaRates } from '../data/wilayaRates';
+import { calculateShipping } from '../data/shippingRates';
 import { Truck, MapPin, CheckCircle, ArrowLeft } from 'lucide-react';
 
 const ProductPage = () => {
@@ -100,26 +101,10 @@ const ProductPage = () => {
 
     // Recalculate Logic
     useEffect(() => {
-        if (!formData.wilayaId) {
-            setShippingPrice(0);
-            if (product) setTotalPrice(product.price);
-            return;
-        }
-
-        const selectedRate = wilayaRates.find(w => w.id === parseInt(formData.wilayaId));
-        if (!selectedRate) return;
-
-        let price = 0;
-        if (formData.delivery_method === 'Home Delivery') {
-            price = selectedRate.home;
-        } else if (formData.delivery_method === 'Office Pickup') {
-            price = selectedRate.stopdesk || 0;
-        }
-
-        setShippingPrice(price);
-        if (product) setTotalPrice(product.price + price);
-
-    }, [formData.wilayaId, formData.deliveryType, product]);
+        const cost = calculateShipping(formData.wilaya, formData.delivery_method);
+        setShippingPrice(cost);
+        if (product) setTotalPrice(product.price + cost);
+    }, [formData.wilaya, formData.delivery_method, product]);
 
 
     const handleInputChange = (e) => {
@@ -129,10 +114,12 @@ const ProductPage = () => {
         // Reset to home delivery if stopdesk is not available for new wilaya
         if (name === 'wilayaId') {
             const rate = wilayaRates.find(r => r.id === parseInt(value));
+            const wilayaString = rate ? `${rate.id} - ${rate.name}` : '';
+
             if (rate && rate.stopdesk === null && formData.delivery_method === 'Office Pickup') {
-                setFormData(prev => ({ ...prev, delivery_method: 'Home Delivery', [name]: value, wilaya: rate.name }));
+                setFormData(prev => ({ ...prev, delivery_method: 'Home Delivery', [name]: value, wilaya: wilayaString }));
             } else {
-                setFormData(prev => ({ ...prev, [name]: value, wilaya: rate?.name || '' }));
+                setFormData(prev => ({ ...prev, [name]: value, wilaya: wilayaString }));
             }
             return;
         }

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, Lock, Truck, MapPin } from 'lucide-react';
 import { wilayaRates } from '../data/wilayaRates';
+import { calculateShipping } from '../data/shippingRates';
 import ProductCard from '../components/ProductCard';
 
 const CartPage = () => {
@@ -23,20 +24,24 @@ const CartPage = () => {
     });
 
     // Calculated Shipping
-    // Calculated Shipping
-    const selectedWilaya = wilayaRates.find(w => w.id === parseInt(formData.wilayaId));
-    let shippingPrice = 600; // Default fallback
-
-    if (selectedWilaya) {
-        if (formData.delivery_method === 'Home Delivery') {
-            shippingPrice = selectedWilaya.home || 600;
-        } else {
-            shippingPrice = selectedWilaya.stopdesk || 400;
-        }
-    }
-
+    const [shippingPrice, setShippingPrice] = useState(0);
     const subtotal = Number(getCartTotal()) || 0;
     const grandTotal = subtotal + (Number(shippingPrice) || 0);
+
+    useEffect(() => {
+        const cost = calculateShipping(formData.wilaya, formData.delivery_method);
+        setShippingPrice(cost);
+    }, [formData.wilaya, formData.delivery_method]);
+
+    // Track wilaya name for calculateShipping
+    useEffect(() => {
+        const selectedWilaya = wilayaRates.find(w => w.id === parseInt(formData.wilayaId));
+        if (selectedWilaya) {
+            setFormData(prev => ({ ...prev, wilaya: `${selectedWilaya.id} - ${selectedWilaya.name}` }));
+        } else {
+            setFormData(prev => ({ ...prev, wilaya: '' }));
+        }
+    }, [formData.wilayaId]);
 
     useEffect(() => {
         // Fetch random products for "You May Also Like"
@@ -66,7 +71,7 @@ const CartPage = () => {
                 total_price: Number(grandTotal),
                 customer_name: formData.customer_name,
                 phone: formData.phone,
-                wilaya: selectedWilaya?.name || '',
+                wilaya: formData.wilaya, // Use the formatted wilaya string
                 commune: formData.commune || '',
                 address: formData.address || '',
                 delivery_method: formData.delivery_method,
