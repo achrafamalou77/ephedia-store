@@ -88,76 +88,132 @@ const AdminOrders = () => {
             ) : (
                 <div className="space-y-6">
                     {orders.map(order => (
-                        <div key={order.id} className="bg-white rounded-xl shadow-sm border border-navy/10 overflow-hidden hover:shadow-md transition-shadow">
+                        <div key={order.id} className="bg-white rounded-xl shadow-lg border border-navy/10 overflow-hidden hover:border-navy/20 transition-all duration-300">
 
-                            {/* Header */}
-                            <div className="bg-navy/5 px-6 py-4 flex flex-wrap justify-between items-center gap-4 border-b border-navy/5">
+                            {/* Card Header: ID & Status */}
+                            <div className="bg-navy/5 px-6 py-3 flex justify-between items-center border-b border-navy/5">
                                 <div className="flex items-center gap-3">
-                                    <span className="font-mono text-xs text-navy/50 uppercase">ID: {order.id}</span>
+                                    <span className="text-[10px] font-mono text-navy/40 uppercase tracking-widest">Order #{order.id.toString().slice(0, 8)}...</span>
                                     {getStatusBadge(order.status)}
                                 </div>
-                                <div className="flex items-center gap-4 text-sm text-navy/70">
-                                    <div className="flex items-center gap-1"><Calendar size={14} /> {new Date(order.created_at).toLocaleDateString()}</div>
-                                    <div className="font-bold text-navy">{order.total_price} DA</div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xs text-navy/50 flex items-center gap-1 font-medium">
+                                        <Calendar size={12} /> {new Date(order.created_at).toLocaleDateString()}
+                                    </span>
                                     <button
                                         onClick={() => deleteOrder(order.id)}
-                                        className="text-red-400 hover:text-red-700 transition-colors ml-2"
+                                        className="text-red-300 hover:text-red-500 transition-colors p-1"
                                         title="Delete Order"
                                     >
-                                        <Trash2 size={18} />
+                                        <Trash2 size={16} />
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Body */}
-                            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Card Body */}
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-                                {/* Customer Info */}
-                                <div className="space-y-2">
-                                    <h4 className="text-xs font-bold text-navy/40 uppercase tracking-wider mb-2">Customer</h4>
-                                    <p className="font-medium text-navy text-lg">{order.full_name}</p>
-                                    <p className="flex items-center gap-2 text-navy/80"><Phone size={16} className="text-navy/40" /> {order.phone}</p>
-                                    {order.instagram && <p className="text-sm text-blue-600">@{order.instagram}</p>}
-                                </div>
-
-                                {/* Shipping Info */}
-                                <div className="space-y-2">
-                                    <h4 className="text-xs font-bold text-navy/40 uppercase tracking-wider mb-2">Shipping</h4>
-                                    <p className="flex items-start gap-2 text-navy/80">
-                                        <MapPin size={16} className="text-navy/40 mt-1 shrink-0" />
-                                        <span>
-                                            {order.commune}, {order.wilaya_name}<br />
-                                            <span className="text-xs bg-navy/10 px-2 py-0.5 rounded text-navy/70 mt-1 inline-block">
-                                                {order.delivery_type === 'home' ? 'Home Delivery' : 'Stop Desk Pickup'}
-                                            </span>
-                                        </span>
-                                    </p>
-                                </div>
-
-                                {/* Order Items & Action */}
-                                <div className="space-y-4 md:text-right">
-                                    <div>
-                                        <h4 className="text-xs font-bold text-navy/40 uppercase tracking-wider mb-2 md:text-right">Item</h4>
-                                        <p className="font-medium text-navy">{order.product_title}</p>
-                                        <p className="text-sm text-navy/60">Product: {order.product_price} DA + Ship: {order.shipping_price} DA</p>
+                                    {/* Column 1: Customer Info */}
+                                    <div className="space-y-3">
+                                        <h4 className="text-[10px] font-bold text-navy/30 uppercase tracking-[0.2em]">Customer Profile</h4>
+                                        <div className="space-y-1.5">
+                                            <p className="text-xl font-serif text-navy font-semibold">{order.customer_name || 'N/A'}</p>
+                                            <p className="flex items-center gap-2 text-navy/70 font-medium">
+                                                <Phone size={14} className="text-navy/30" /> {order.phone}
+                                            </p>
+                                            {order.instagram && (
+                                                <p className="text-sm text-pink-600 font-medium flex items-center gap-2">
+                                                    <span className="w-4 h-4 rounded-full bg-pink-100 flex items-center justify-center text-[10px]">IG</span>
+                                                    @{order.instagram.replace('@', '')}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
 
-                                    <div className="flex gap-2 md:justify-end pt-2">
+                                    {/* Column 2: Shipping & Logistics */}
+                                    <div className="space-y-3">
+                                        <h4 className="text-[10px] font-bold text-navy/30 uppercase tracking-[0.2em]">Deployment & Logistics</h4>
+                                        <div className="space-y-2">
+                                            <div className="flex items-start gap-2 text-navy/80">
+                                                <MapPin size={14} className="text-navy/30 mt-1 shrink-0" />
+                                                <div>
+                                                    <p className="font-semibold leading-tight">{order.wilaya}</p>
+                                                    <p className="text-sm text-navy/60">{order.commune}</p>
+                                                </div>
+                                            </div>
+                                            <div className="pt-1">
+                                                <span className={`text-[10px] uppercase font-bold px-2.5 py-1 rounded-md tracking-wider border ${order.delivery_method === 'home'
+                                                    ? 'bg-blue-50 text-blue-700 border-blue-100'
+                                                    : 'bg-amber-50 text-amber-700 border-amber-100'
+                                                    }`}>
+                                                    {order.delivery_method === 'home' ? 'Home Delivery' : 'Stop Desk Pickup'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Column 3: Product & Financials */}
+                                    <div className="space-y-3">
+                                        <h4 className="text-[10px] font-bold text-navy/30 uppercase tracking-[0.2em]">Revenue & Fulfillment</h4>
+                                        <div className="bg-navy/[0.02] rounded-lg p-3 border border-navy/5 space-y-2">
+                                            <div className="flex justify-between items-start gap-2 font-serif text-navy font-medium">
+                                                <span className="line-clamp-2 leading-snug">{order.product_name || 'Unknown Product'}</span>
+                                            </div>
+                                            <div className="text-[10px] space-y-1 text-navy/50 border-t border-navy/5 pt-2">
+                                                <div className="flex justify-between">
+                                                    <span>Base Item</span>
+                                                    <span>{order.product_price} DA</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span>Shipping Fee</span>
+                                                    <span>+ {order.shipping_price} DA</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-between items-center pt-1 border-t border-navy/10 mt-1">
+                                                <span className="text-xs font-bold text-navy">TOTAL</span>
+                                                <span className="text-lg font-bold text-navy">{order.total_price} DA</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                {/* Order Actions Footer */}
+                                <div className="mt-8 pt-6 border-t border-navy/5 flex flex-wrap gap-3 items-center justify-between">
+                                    <div className="flex gap-2">
                                         {(order.status === 'pending' || order.status === 'new') && (
                                             <>
-                                                <button onClick={() => handleUpdateStatus(order.id, 'confirmed')} className="px-4 py-2 bg-green-50 text-green-700 text-xs font-bold uppercase rounded hover:bg-green-100 transition-colors border border-green-200">Confirm</button>
-                                                <button onClick={() => handleUpdateStatus(order.id, 'cancelled')} className="px-4 py-2 bg-red-50 text-red-700 text-xs font-bold uppercase rounded hover:bg-red-100 transition-colors border border-red-200">Cancel</button>
+                                                <button
+                                                    onClick={() => handleUpdateStatus(order.id, 'confirmed')}
+                                                    className="px-6 py-2 bg-navy text-cream text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-navy/90 transition-all shadow-sm active:scale-95"
+                                                >
+                                                    Confirm Order
+                                                </button>
+                                                <button
+                                                    onClick={() => handleUpdateStatus(order.id, 'cancelled')}
+                                                    className="px-6 py-2 bg-white text-red-600 text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-red-50 transition-all border border-red-100 active:scale-95"
+                                                >
+                                                    Reject
+                                                </button>
                                             </>
                                         )}
                                         {order.status === 'confirmed' && (
-                                            <span className="text-xs text-green-600 font-medium italic flex items-center gap-1"><CheckCircle size={12} /> Order Confirmed</span>
+                                            <div className="px-6 py-2 bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-widest rounded-full border border-green-100 flex items-center gap-2">
+                                                <CheckCircle size={12} /> Successfully Processed
+                                            </div>
                                         )}
                                         {order.status === 'cancelled' && (
-                                            <span className="text-xs text-red-600 font-medium italic flex items-center gap-1"><XCircle size={12} /> Order Cancelled</span>
+                                            <div className="px-6 py-2 bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-widest rounded-full border border-red-100 flex items-center gap-2">
+                                                <XCircle size={12} /> Transaction Cancelled
+                                            </div>
                                         )}
                                     </div>
-                                </div>
 
+                                    <div className="text-[10px] text-navy/30 italic">
+                                        Fulfillment pending visual inspection
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ))}

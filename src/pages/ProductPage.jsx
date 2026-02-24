@@ -14,12 +14,14 @@ const ProductPage = () => {
 
     // Form State
     const [formData, setFormData] = useState({
-        fullName: '',
+        customer_name: '',
         instagram: '',
         phone: '',
         commune: '',
+        address: '',
+        wilaya: '', // Wilaya Name
         wilayaId: '',
-        deliveryType: 'home' // 'home' or 'stopdesk'
+        delivery_method: 'Home Delivery'
     });
 
     // Calculated State
@@ -83,12 +85,14 @@ const ProductPage = () => {
 
         // Reset Form when ID changes
         setFormData({
-            fullName: '',
+            customer_name: '',
             instagram: '',
             phone: '',
             commune: '',
+            address: '',
+            wilaya: '',
             wilayaId: '',
-            deliveryType: 'home'
+            delivery_method: 'Home Delivery'
         });
         setShippingPrice(0);
         window.scrollTo(0, 0);
@@ -106,10 +110,10 @@ const ProductPage = () => {
         if (!selectedRate) return;
 
         let price = 0;
-        if (formData.deliveryType === 'home') {
+        if (formData.delivery_method === 'Home Delivery') {
             price = selectedRate.home;
-        } else if (formData.deliveryType === 'stopdesk') {
-            price = selectedRate.stopdesk || 0; // fallback if null, though disabled in UI
+        } else if (formData.delivery_method === 'Office Pickup') {
+            price = selectedRate.stopdesk || 0;
         }
 
         setShippingPrice(price);
@@ -125,9 +129,12 @@ const ProductPage = () => {
         // Reset to home delivery if stopdesk is not available for new wilaya
         if (name === 'wilayaId') {
             const rate = wilayaRates.find(r => r.id === parseInt(value));
-            if (rate && rate.stopdesk === null && formData.deliveryType === 'stopdesk') {
-                setFormData(prev => ({ ...prev, deliveryType: 'home', [name]: value }));
+            if (rate && rate.stopdesk === null && formData.delivery_method === 'Office Pickup') {
+                setFormData(prev => ({ ...prev, delivery_method: 'Home Delivery', [name]: value, wilaya: rate.name }));
+            } else {
+                setFormData(prev => ({ ...prev, [name]: value, wilaya: rate?.name || '' }));
             }
+            return;
         }
     };
 
@@ -142,23 +149,22 @@ const ProductPage = () => {
         if (!product) return;
 
         try {
-            const payload = {
+            const orderPayload = {
                 product_name: product.title,
-                product_price: Number(product.price),
-                shipping_price: Number(shippingPrice),
-                total_price: Number(totalPrice),
-                customer_name: formData.fullName,
-                instagram: formData.instagram,
+                product_price: product.price,
+                customer_name: formData.customer_name,
                 phone: formData.phone,
-                wilaya: wilayaRates.find(w => w.id === parseInt(formData.wilayaId))?.name || '',
-                commune: formData.commune,
-                delivery_type: formData.deliveryType,
+                instagram: formData.instagram || '',
+                wilaya: formData.wilaya,
+                commune: formData.commune || '',
+                address: formData.address || '',
+                delivery_method: formData.delivery_method || 'Home Delivery',
                 status: 'pending'
             };
 
             const { error } = await supabase
                 .from('orders')
-                .insert([payload]);
+                .insert([orderPayload]);
 
             if (error) throw error;
 
@@ -243,8 +249,8 @@ const ProductPage = () => {
                                     <label className="block text-sm font-medium text-navy/70 mb-1">Full Name</label>
                                     <input
                                         type="text"
-                                        name="fullName"
-                                        value={formData.fullName}
+                                        name="customer_name"
+                                        value={formData.customer_name}
                                         onChange={handleInputChange}
                                         required
                                         className="w-full px-4 py-3 bg-cream/30 border border-navy/10 rounded-lg focus:outline-none focus:border-navy focus:ring-1 focus:ring-navy transition-all"
@@ -261,6 +267,17 @@ const ProductPage = () => {
                                         required
                                         className="w-full px-4 py-3 bg-cream/30 border border-navy/10 rounded-lg focus:outline-none focus:border-navy focus:ring-1 focus:ring-navy transition-all"
                                         placeholder="05 XX XX XX XX"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-navy/70 mb-1">Detailed Address <span className="text-xs text-navy/40 font-normal opacity-70">- Optional</span></label>
+                                    <input
+                                        type="text"
+                                        name="address"
+                                        value={formData.address}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 bg-cream/30 border border-navy/10 rounded-lg focus:outline-none focus:border-navy focus:ring-1 focus:ring-navy transition-all"
+                                        placeholder="Street, Building, etc."
                                     />
                                 </div>
                                 <div>
@@ -319,16 +336,16 @@ const ProductPage = () => {
                                 <label className="block text-sm font-medium text-navy/70">Delivery Method</label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <label
-                                        className={`relative flex items-center p-4 border rounded-xl cursor-pointer transition-all ${formData.deliveryType === 'home'
+                                        className={`relative flex items-center p-4 border rounded-xl cursor-pointer transition-all ${formData.delivery_method === 'Home Delivery'
                                             ? 'border-navy bg-navy/5'
                                             : 'border-navy/10 hover:border-navy/30'
                                             }`}
                                     >
                                         <input
                                             type="radio"
-                                            name="deliveryType"
-                                            value="home"
-                                            checked={formData.deliveryType === 'home'}
+                                            name="delivery_method"
+                                            value="Home Delivery"
+                                            checked={formData.delivery_method === 'Home Delivery'}
                                             onChange={handleInputChange}
                                             className="text-navy focus:ring-navy"
                                         />
@@ -341,16 +358,16 @@ const ProductPage = () => {
                                     <label
                                         className={`relative flex items-center p-4 border rounded-xl transition-all ${isStopdeskDisabled()
                                             ? 'opacity-50 cursor-not-allowed bg-gray-50 border-gray-100'
-                                            : formData.deliveryType === 'stopdesk'
+                                            : formData.delivery_method === 'Office Pickup'
                                                 ? 'border-navy bg-navy/5 cursor-pointer'
-                                                : 'border-navy/10 hover:border-navy/30 cursor-pointer'
+                                                : 'border-navy/10 hover:border-navy/30'
                                             }`}
                                     >
                                         <input
                                             type="radio"
-                                            name="deliveryType"
-                                            value="stopdesk"
-                                            checked={formData.deliveryType === 'stopdesk'}
+                                            name="delivery_method"
+                                            value="Office Pickup"
+                                            checked={formData.delivery_method === 'Office Pickup'}
                                             onChange={handleInputChange}
                                             disabled={isStopdeskDisabled()}
                                             className="text-navy focus:ring-navy disabled:opacity-50"
@@ -373,7 +390,7 @@ const ProductPage = () => {
                                     <span>{product.price} DA</span>
                                 </div>
                                 <div className="flex justify-between text-sm text-navy/70">
-                                    <span>Shipping ({formData.deliveryType === 'home' ? 'Home' : 'Stop Desk'})</span>
+                                    <span>Shipping ({formData.delivery_method})</span>
                                     <span>{formData.wilayaId ? `+ ${shippingPrice} DA` : '--'}</span>
                                 </div>
                                 <div className="border-t border-navy/10 pt-3 flex justify-between items-center">
@@ -387,7 +404,7 @@ const ProductPage = () => {
                             <button
                                 type="submit"
                                 className="w-full bg-navy text-cream py-4 rounded-full font-medium text-lg hover:bg-navy/90 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-                                disabled={!formData.wilayaId || !formData.phone || !formData.fullName}
+                                disabled={!formData.wilayaId || !formData.phone || !formData.customer_name}
                             >
                                 Confirm Order - Cash on Delivery
                             </button>
