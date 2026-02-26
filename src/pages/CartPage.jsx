@@ -68,7 +68,7 @@ const CartPage = () => {
                 product_name: productNames,
                 product_price: Number(subtotal),
                 shipping_price: Number(shippingPrice),
-                total_price: Number(grandTotal),
+                total_price: Number(subtotal) + Number(shippingPrice),
                 customer_name: formData.customer_name,
                 phone: formData.phone,
                 wilaya: formData.wilaya, // Use the formatted wilaya string

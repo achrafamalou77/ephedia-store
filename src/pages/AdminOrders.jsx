@@ -194,12 +194,12 @@ const AdminOrders = () => {
                                                 </div>
                                                 <div className="flex justify-between">
                                                     <span>Shipping Fee</span>
-                                                    <span>+ {order.shipping_price} DA</span>
+                                                    <span>+ {order.shipping_price || 0} DA</span>
                                                 </div>
                                             </div>
                                             <div className="flex justify-between items-center pt-1 border-t border-navy/10 mt-1">
                                                 <span className="text-xs font-bold text-navy">TOTAL</span>
-                                                <span className="text-lg font-bold text-navy">{order.total_price} DA</span>
+                                                <span className="text-lg font-bold text-navy">{order.total_price || order.product_price} DA</span>
                                             </div>
                                         </div>
                                     </div>

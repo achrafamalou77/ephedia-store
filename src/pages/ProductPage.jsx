@@ -146,6 +146,8 @@ const ProductPage = () => {
                 commune: formData.commune || '',
                 address: formData.address || '',
                 delivery_method: formData.delivery_method || 'Home Delivery',
+                shipping_price: shippingPrice,
+                total_price: Number(product.price) + Number(shippingPrice),
                 status: 'pending'
             };
 
