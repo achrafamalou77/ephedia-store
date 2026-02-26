@@ -1,7 +1,7 @@
 import React from 'react';
 
 // Your High-Speed Supabase Link
-const HERO_IMAGE_URL = "https://hlmpdrzntwhlbijqttvr.supabase.co/storage/v1/object/public/website-assets/Gemini_Generated_Image_zcfo5wzcfo5wzcfo.png";
+const HERO_IMAGE_URL = "https://hlmpdrzntwhlbijqttvr.supabase.co/storage/v1/object/public/website-assets/Gemini_Generated_Image_zcfo5wzcfo5wzcfo%20(1).webp";
 
 const Hero = () => {
     return (
