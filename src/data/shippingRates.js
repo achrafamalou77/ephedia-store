@@ -63,11 +63,20 @@ export const wilayaRates = {
 export const calculateShipping = (wilaya, deliveryMethod) => {
     if (!wilaya) return 0;
 
-    // Extract just the number (e.g., "16" from "16 - Alger") to safely match it
-    const wilayaNumber = wilaya.split(" - ")[0];
+    // Safely extract the exact number as an integer (turns "5 - Batna" or "05 - Batna" into the math number 5)
+    const match = wilaya.match(/\d+/);
+    if (!match) return wilayaRates["default"][deliveryMethod === 'Office Pickup' ? 'desk' : 'home'];
 
-    // Find the matching Wilaya in our list
-    const rateKey = Object.keys(wilayaRates).find(key => key.startsWith(wilayaNumber));
+    const extractedNumber = parseInt(match[0], 10);
+
+    // Find the matching Wilaya in our list by comparing integers
+    const rateKey = Object.keys(wilayaRates).find(key => {
+        const keyMatch = key.match(/\d+/);
+        if (!keyMatch) return false;
+        const keyNumber = parseInt(keyMatch[0], 10);
+        return keyNumber === extractedNumber;
+    });
+
     const rates = wilayaRates[rateKey] || wilayaRates["default"];
 
     // If they choose Stop Desk, but this Wilaya doesn't have an Ecotrack office (null), fallback to home delivery price safely
